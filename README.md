@@ -65,3 +65,17 @@ ConvBranches(
                         'filters': (128, 128, 128, 128, 192)}}
 )
 ```
+
+Library also contains implementation of several popular CNN architectures for image classificaton/segmentation and detection. Here is non-exhaustive list of architectures:
+- VGG
+- ResNet
+- DenseNet
+- MobileNetV1, MobileNetV2, MobileNetV3
+- ShuffleNetV1, ShuffleNetV2
+- SqueezeNet
+- InceptionV3, InceptionV4
+- InceptionResNet
+- Xception
+- UNet
+- VNet
+- SSD
