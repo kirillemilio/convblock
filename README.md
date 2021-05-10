@@ -39,7 +39,7 @@ ConvBlock(input_shape=(32, 32, 32),
 If you want to reuse the same block structure but in 3D space(using 3D convolutions and batch normalization) you need just to change **input_shape** all other modules inside **ConvBlock** will be adapted to spatial dimension of input. So, the following code will generate the same **DenseBlock** that can be used on 3D image(for example, CT scans)
 
 ```python
-
+from convblock import ConvBlock
 
 ConvBlock(input_shape=(32, 32, 32, 32),
           layout='. cna cna .' * 4,
@@ -49,8 +49,9 @@ ConvBlock(input_shape=(32, 32, 32, 32),
 ```
 
 
-More complex structures with bunch of branches can also be created and designed using just a few lines of code. For instance, here is implementation of **InceptionB** module
+More complex structures with bunch of branches can also be created and designed using just a few lines of code. For instance, here is implementation of **InceptionB** module using **ConvBranches** module that allows to describe branches of **ConvBlock** on par with mixing operation(., *, +):
 ```python
+from convblock import ConvBranches
 
 ConvBranches(
     input_shape=(32, 32, 32), mode='.',
