@@ -55,6 +55,7 @@ class DenseNet(BaseModel):
         growth_rate = dense_config.get('growth_rate')
         num_layers = dense_config.get('num_layers')
         kernel_size = dense_config.get('kernel_size')
+        layout = dense_config.get('layout')
 
         shape = input_shape
         body = Sequential()
@@ -66,7 +67,8 @@ class DenseNet(BaseModel):
                 bottleneck_factor=bottleneck_factor,
                 growth_rate=growth_rate,
                 num_layers=inum_layers,
-                kernel_size=kernel_size
+                kernel_size=kernel_size,
+                layout=layout
             )
             body.add_module("Block_{}".format(i), x)
 
