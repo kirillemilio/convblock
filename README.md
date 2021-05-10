@@ -69,7 +69,7 @@ ConvBranches(
 )
 ```
 
-Library also contains implementation of several popular CNN architectures for image classificaton/segmentation and detection. Here is non-exhaustive list of architectures:
+Library also contains flexibly parametrized implementation of several popular CNN architectures for image classificaton/segmentation and detection. Here is non-exhaustive list of architectures:
 - VGG
 - ResNet
 - DenseNet
