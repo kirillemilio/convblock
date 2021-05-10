@@ -1,4 +1,4 @@
-# medimg/models
+# convblock
 Artificial neural networks architectures implemented via pytorch. This library's main purpose is to simplify creation, design and experiments with convolutional neural networks. Library is build on top of pytorch framework.
 
 ### ConvBlock module
