@@ -1,6 +1,9 @@
 # convblock
 Artificial neural networks architectures implemented via pytorch. This library's main purpose is to simplify creation, design and experiments with convolutional neural networks. Library is build on top of pytorch framework.
 
+# Installation
+```git clone https://github.com/kirillemilio/convblock.git && cd convblock && pip install .```
+
 ### ConvBlock module
 This module provides simple, easy to understand and unified way to create typical convolutional layout. For example, simple sequential module can be described in a following way:
 
