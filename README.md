@@ -82,3 +82,24 @@ Library also contains flexibly parametrized implementation of several popular CN
 - UNet
 - VNet
 - SSD
+
+
+It's easy to change parameters of creation of various models. For example, here is a code for changing default **ResNet** to **SEResNext50** model
+```python
+
+from convblock import ResNet
+from convblock import Config
+
+config = Config({
+    'input_shape': (3, 256, 256),
+    'num_blocks': (3, 4, 6, 3),
+    'use_bottleneck': True,
+    'body/cardinality': 32,
+    'body/use_se': True,
+    'body/shortcut/layout': 'p cna',
+    'body/shortcut/pool_mode': 'avg'
+})
+
+se_resnext50 = ResNet(config)
+
+```
