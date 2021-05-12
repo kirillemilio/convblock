@@ -58,11 +58,20 @@ from convblock import ConvBranches
 
 ConvBranches(
     input_shape=(32, 32, 32), mode='.',
-    branch1x1={'layout': 'cna', 'c': {'filters': 192, 'kernel_size': 1}},
-    branch_pool={'layout': 'p cna', 'c': {'filters': 192, 'kernel_size': 1},
-                 'p': {'mode': 'avg', 'kernel_size': 3, 'stride': 1}},
-    branch7x7={'layout': 'cna cna cna', 'c': {'kernel_size': [(1, 1), (1, 7), (7, 1)],
-                                              'filters': [128, 128, 192]}},
+    branch1x1={
+        'layout': 'cna',
+        'c': {'filters': 192, 'kernel_size': 1}
+    },
+    branch_pool={
+        'layout': 'p cna',
+        'c': {'filters': 192, 'kernel_size': 1},
+        'p': {'mode': 'avg', 'kernel_size': 3, 'stride': 1}
+    },
+    branch7x7={
+        'layout': 'cna cna cna',
+        'c': {'kernel_size': [(1, 1), (1, 7), (7, 1)],
+        'filters': [128, 128, 192]}
+    },
     branch7x7dbl={'layout': 'cna cna cna cna cna',
                   'c': {'kernel_size': [(1, 1), (1, 7), (7, 1), (1, 7), (7, 1)],
                         'filters': (128, 128, 128, 128, 192)}}
