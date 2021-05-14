@@ -717,7 +717,7 @@ class Branches(Module):
         """
         outputs = [branch(x) for branch in self.branches]
         if self.mode == '.':
-            return torch.cat([u.expand(u.size(0), *self.output_shape)
+            return torch.cat([u.expand(u.size(0), *self.output_shape.astype(int))
                               for u in outputs], dim=1)
         elif self.mode == '+':
             z = outputs[0]
