@@ -283,3 +283,52 @@ class FocalLoss(torch.nn.Module):
         conf_loss = self.forward_conf(conf_preds.view(-1, conf_preds.size(-1)),
                                       conf_targets.view(-1), pos_indices.view(-1))
         return self.beta * conf_loss + (1 - self.beta) * loc_loss, conf_loss, loc_loss
+    
+
+class IOULoss(torch.nn.Module):
+    
+    def __init__(self, mode='giou'):
+        super().__init__()
+        mode = mode.strip().lower()
+        assert mode in ('iou', 'giou', 'diou', 'ciou')
+        self.mode = mode
+        
+    @classmethod
+    def iou(cls, x, y, mode='iou'):
+        x_, y_ = x.unsqueeze(-2), y.unsqueeze(-3)
+
+        tl = torch.max(x_[..., :2], y_[..., :2])
+        br = torch.min(x_[..., 2:], y_[..., 2:])
+
+        area_x = torch.prod(x_[..., 2:] - x_[..., :2], dim=-1).clamp(min=0.0)
+        area_y = torch.prod(y_[..., 2:] - y_[..., 2:], dim=-1).clamp(min=0.0)
+        
+        area_inter = torch.prod(br - tl, dim=-1).clamp(min=0.0)
+        area_union = area_x + area_y - area_inter
+        
+        iou = area_inter / area_union
+        
+        if mode = 'iou':
+            return iou
+        
+        con_tl = torch.min(x_[..., :2], y_[..., :2])
+        con_br = torch.max(x_[..., 2:], y_[..., 2:])
+        area_con = torch.prod(con_br - con_tl, dim=-1).clamp(min=0.0)
+        if mode == 'giou':
+            return iou - (area_con - area_union) / area_con
+        else:
+            rho2 = ((x_[..., :2] + x_[..., 2:]) - (y_[..., :2] - x_[..., 2:])).pow(2.0).div(4).sum(dim=-1)
+            c2 = (con_br - con_tl).pow(2.0).sum(dim=-1) + 1e-16
+
+        if mode == 'diou':
+            return iou - rho2 / c2
+        else:
+            q_x = torch.atan((x_[..., 2] - x_[..., 0]) / (x_[..., 3] - x_[..., 1]))
+            q_y = torch.atan((y_[..., 2] - y_[..., 0]) / (y_[..., 3] - y_[..., 1]))
+            v = (4 / math.pi ** 2) * torch.pow(torch.atan(q_x) - torch.atan(q_y), 2)
+            with torch.no_grad():
+                alpha = v / (1 - iou + v)
+            return iou - (rho2 / c2 + v * alpha)
+    
+    def forward(self, pred, target):
+        return 1.0 - self.iou(pred, target, mode=self.mode)
