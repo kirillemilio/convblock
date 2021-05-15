@@ -308,7 +308,7 @@ class IOULoss(torch.nn.Module):
         
         iou = area_inter / area_union
         
-        if mode = 'iou':
+        if mode == 'iou':
             return iou
         
         con_tl = torch.min(x_[..., :2], y_[..., :2])
