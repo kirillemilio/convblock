@@ -317,7 +317,7 @@ class IOULoss(torch.nn.Module):
         if mode == 'giou':
             return iou - (area_con - area_union) / area_con
         else:
-            rho2 = ((x_[..., :2] + x_[..., 2:]) - (y_[..., :2] - x_[..., 2:])).pow(2.0).div(4).sum(dim=-1)
+            rho2 = ((x_[..., :2] + x_[..., 2:]) - (y_[..., :2] - y_[..., 2:])).pow(2.0).div(4).sum(dim=-1)
             c2 = (con_br - con_tl).pow(2.0).sum(dim=-1) + 1e-16
 
         if mode == 'diou':
