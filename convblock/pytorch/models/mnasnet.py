@@ -8,7 +8,7 @@ from .base_model import BaseModel
 
 
 class MNasNet(BaseModel):
-    
+
     @classmethod
     def inverted_residual(cls,
                           input_shape,
@@ -34,11 +34,11 @@ class MNasNet(BaseModel):
                    filters=filters, groups=groups,
                    dilation=dilation)
         )
-    
+
     @classmethod
     def default_config(cls):
         config = BaseModel.default_config()
-        
+
         config['input'] = {
             'layout': 'cna cna cn',
             'c': {
@@ -48,7 +48,7 @@ class MNasNet(BaseModel):
                 'filters': [32, 32, 16]
             }
         }
-        
+
         config['body'] = {
             'filters': [24, 40, 80, 96, 192, 320],
             'num_repeats': [3, 3, 3, 2, 4, 1],
@@ -57,7 +57,7 @@ class MNasNet(BaseModel):
             'downsample': [True, True, True,
                            False, True, False]
         }
-        
+
         config['head'] = {
             'layout': 'cna > df',
             'c': {
@@ -69,7 +69,7 @@ class MNasNet(BaseModel):
             }
         }
         return config
-    
+
     def build_body(self, input_shape, config):
         filters = config.get('filters')
         downsample = config.get('downsample')
@@ -80,7 +80,7 @@ class MNasNet(BaseModel):
         assert len(filters) == len(factor)
         assert len(filters) == len(kernel_size)
         assert len(filters) == len(num_repeats)
-        
+
         shape = input_shape
         body = Sequential()
         for i, n in enumerate(num_repeats):
@@ -94,5 +94,5 @@ class MNasNet(BaseModel):
                 )
                 body.add_module(f"Block-{i}-{j}", x)
                 shape = x.output_shape
-        
+
         return body

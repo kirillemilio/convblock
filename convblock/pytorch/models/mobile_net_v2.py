@@ -40,7 +40,7 @@ class MobileNetV2(BaseModel):
             'a': dict(activation=('relu', 'linear'))
         }
         return config
-            
+
     @staticmethod
     def _make_divisible(x: int, by: int = 8):
         return int(np.ceil(x * 1. / by) * by)
