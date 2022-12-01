@@ -40,6 +40,7 @@ class MobileNetV3(MobileNetV2):
                 input_shape=input_shape,
                 layout='+ cna cna cn +' if use_res else 'cna cna cn',
                 c=dict(kernel_size=[1, kernel_size, 1],
+                       groups=[1, exp_filters, 1],
                        stride=[1, 2, 1] if downsample else [1, 1, 1],
                        filters=(exp_filters, exp_filters, filters)),
                 **kwargs
@@ -50,6 +51,7 @@ class MobileNetV3(MobileNetV2):
                 input_shape=input_shape,
                 layout='+ cna cna * p cna cna * cn +' + 'a' * post_activation,
                 c=dict(kernel_size=[1, kernel_size, 1, 1, 1],
+                       groups=[1, exp_filters, 1, 1, 1],
                        stride=[1, 2 if downsample else 1, 1, 1, 1],
                        filters=[exp_filters, exp_filters,
                                 se_filters, exp_filters, filters]),
