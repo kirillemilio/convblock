@@ -1,4 +1,6 @@
+""" Contains implementation of parametrized MobileNetV3 model. """
 import numpy as np
+
 from .base_model import BaseModel
 from .mobile_net_v2 import MobileNetV2
 from ..layers import ConvBlock
@@ -83,7 +85,6 @@ class MobileNetV3(MobileNetV2):
                 'use_se': use_se[i],
                 'block': self.conv_block
             }
-            print(iconfig)
             x = self.block(**iconfig)
 
             body.add_module(f"Block_{i}", x)

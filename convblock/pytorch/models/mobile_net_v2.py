@@ -2,9 +2,6 @@
 import numpy as np
 
 from ..layers import ConvBlock
-from ..blocks import VanillaResBlock
-from ..blocks.se import SEModule
-from ..utils import INT_TYPES, FLOAT_TYPES
 from ..bases import Sequential
 from .base_model import BaseModel
 
