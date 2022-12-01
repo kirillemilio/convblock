@@ -9,7 +9,6 @@ from ..bases import Sequential
 from .base_model import BaseModel
 
 
-
 class MobileNetV2(BaseModel):
 
     @classmethod
@@ -78,6 +77,7 @@ class MobileNetV2(BaseModel):
                 input_shape=input_shape,
                 layout='+ cna cna cn +' if use_res else 'cna cna cn',
                 c=dict(kernel_size=[1, kernel_size, 1],
+                       groups=[1, expand_filters, 1],
                        stride=[1, 2, 1] if downsample else [1, 1, 1],
                        filters=(expand_filters, expand_filters, filters)),
                 **kwargs
@@ -89,6 +89,7 @@ class MobileNetV2(BaseModel):
                 layout='+ cna cna * p cna cna * cn +' + 'a' * post_activation,
                 c=dict(kernel_size=[1, kernel_size, 1, 1, 1],
                        stride=[1, 2 if downsample else 1, 1, 1, 1],
+                       groups=[1, expand_filters, 1, 1, 1],
                        filters=[expand_filters, expand_filters,
                                 se_filters, expand_filters, filters]),
                 p=dict(output_size=1, adaptive=True, mode='avg'),
