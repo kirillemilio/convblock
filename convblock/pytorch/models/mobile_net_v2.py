@@ -111,7 +111,6 @@ class MobileNetV2(BaseModel):
                     'filters': max(self._make_divisible(ifilters * compression), min_depth),
                     'downsample': downsample[i] and (j == 0),
                     'factor': factor[i],
-                    'layout': config.get('layout', 'cna cna cn'),
                     'block': self.conv_block
                 }
                 x = self.block(**iconfig)
