@@ -25,7 +25,6 @@ class MobileNetV2(BaseModel):
         config['body'] = {
             'min_depth': 8,
             'compression': 1.0,
-            'layout': 'cna cna cn',
             'filters': (16, 24, 32, 64, 96, 160, 320),
             'num_blocks': (1, 2, 3, 4, 3, 3, 1),
             'factor': (1, 6, 6, 6, 6, 6, 6),
