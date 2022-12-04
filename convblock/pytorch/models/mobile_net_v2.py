@@ -2,12 +2,8 @@
 import numpy as np
 
 from ..layers import ConvBlock
-from ..blocks import VanillaResBlock
-from ..blocks.se import SEModule
-from ..utils import INT_TYPES, FLOAT_TYPES
 from ..bases import Sequential
 from .base_model import BaseModel
-
 
 
 class MobileNetV2(BaseModel):
@@ -29,7 +25,6 @@ class MobileNetV2(BaseModel):
         config['body'] = {
             'min_depth': 8,
             'compression': 1.0,
-            'layout': 'cna cna cn',
             'filters': (16, 24, 32, 64, 96, 160, 320),
             'num_blocks': (1, 2, 3, 4, 3, 3, 1),
             'factor': (1, 6, 6, 6, 6, 6, 6),
@@ -44,7 +39,7 @@ class MobileNetV2(BaseModel):
             'a': dict(activation=('relu', 'linear'))
         }
         return config
-            
+
     @staticmethod
     def _make_divisible(x: int, by: int = 8):
         return int(np.ceil(x * 1. / by) * by)
@@ -78,6 +73,7 @@ class MobileNetV2(BaseModel):
                 input_shape=input_shape,
                 layout='+ cna cna cn +' if use_res else 'cna cna cn',
                 c=dict(kernel_size=[1, kernel_size, 1],
+                       groups=[1, expand_filters, 1],
                        stride=[1, 2, 1] if downsample else [1, 1, 1],
                        filters=(expand_filters, expand_filters, filters)),
                 **kwargs
@@ -89,6 +85,7 @@ class MobileNetV2(BaseModel):
                 layout='+ cna cna * p cna cna * cn +' + 'a' * post_activation,
                 c=dict(kernel_size=[1, kernel_size, 1, 1, 1],
                        stride=[1, 2 if downsample else 1, 1, 1, 1],
+                       groups=[1, expand_filters, 1, 1, 1],
                        filters=[expand_filters, expand_filters,
                                 se_filters, expand_filters, filters]),
                 p=dict(output_size=1, adaptive=True, mode='avg'),
@@ -113,7 +110,6 @@ class MobileNetV2(BaseModel):
                     'filters': max(self._make_divisible(ifilters * compression), min_depth),
                     'downsample': downsample[i] and (j == 0),
                     'factor': factor[i],
-                    'layout': config.get('layout', 'cna cna cn'),
                     'block': self.conv_block
                 }
                 x = self.block(**iconfig)

@@ -1,4 +1,6 @@
+""" Contains implementation of parametrized MobileNetV3 model. """
 import numpy as np
+
 from .base_model import BaseModel
 from .mobile_net_v2 import MobileNetV2
 from ..layers import ConvBlock
@@ -40,6 +42,7 @@ class MobileNetV3(MobileNetV2):
                 input_shape=input_shape,
                 layout='+ cna cna cn +' if use_res else 'cna cna cn',
                 c=dict(kernel_size=[1, kernel_size, 1],
+                       groups=[1, exp_filters, 1],
                        stride=[1, 2, 1] if downsample else [1, 1, 1],
                        filters=(exp_filters, exp_filters, filters)),
                 **kwargs
@@ -50,6 +53,7 @@ class MobileNetV3(MobileNetV2):
                 input_shape=input_shape,
                 layout='+ cna cna * p cna cna * cn +' + 'a' * post_activation,
                 c=dict(kernel_size=[1, kernel_size, 1, 1, 1],
+                       groups=[1, exp_filters, 1, 1, 1],
                        stride=[1, 2 if downsample else 1, 1, 1, 1],
                        filters=[exp_filters, exp_filters,
                                 se_filters, exp_filters, filters]),
@@ -81,7 +85,6 @@ class MobileNetV3(MobileNetV2):
                 'use_se': use_se[i],
                 'block': self.conv_block
             }
-            print(iconfig)
             x = self.block(**iconfig)
 
             body.add_module(f"Block_{i}", x)

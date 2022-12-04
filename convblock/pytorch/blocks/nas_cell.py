@@ -1,13 +1,13 @@
 """ Contains implementation of NasNet architecture convolutional cells. """
 
+import numpy as np
 import torch
 from ..layers import ConvBlock
-from ..layers.conv_block import ConvBranches
 from ..bases import Module
 
 
 class NasCell(Module):
-    
+
     @classmethod
     def branch_separables(cls,
                           input_shape,
@@ -37,7 +37,7 @@ class NasCell(Module):
 
 
 class CellStem0(NasCell):
-    
+
     def __init__(self, input_shape, filters):
         super().__init__(input_shape=input_shape)
 
@@ -51,13 +51,13 @@ class CellStem0(NasCell):
             out_channels=filters, kernel_size=5,
             downsample=True, mode=0
         )
-        
+
         self.branch_right_1 = self.branch_separables(
             input_shape=self.input_shape,
             out_channels=filters, kernel_size=7,
             downsample=True, mode=1
         )
-        
+
         self.branch_left_2 = ConvBlock(
             input_shape=self.conv1x1.output_shape,
             layout='p', p=dict(mode='max', kernel_size=3, stride=2)
@@ -124,7 +124,6 @@ class CellStem0(NasCell):
     
 
 class CellStem1(NasCell):
-    
 
     def __init__(self, input_shape, filters):
         super().__init__(input_shape=input_shape)
