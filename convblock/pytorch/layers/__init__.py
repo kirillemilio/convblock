@@ -1,8 +1,22 @@
-from .conv import Conv, ConvTransposed
-from .pool import Pool, GlobalPool
-from .layers import Dropout, BatchNorm, InstanceNorm, Flatten
-from .layers import Linear, Upsample
+"""Contains imports of convblock options."""
+
 from .activation import Activation
-from .conv_block import ResConvBlock as ConvBlock
+from .conv import Conv, ConvTransposed
 from .conv_block import ConvBranches
+from .conv_block import ResConvBlock as ConvBlock
 from .custom import PixelScaler
+from .droupout import DropoutLayer
+from .flatten import FlattenLayer
+from .layers import BatchNorm, InstanceNorm, Upsample
+from .linear import LinearLayer
+from .pooling import PoolingFactory
+
+__all__ = [
+    "PoolingFactory",
+    "Conv",
+    "ConvTransposed",
+    "Activation",
+    "DropoutLayer",
+    "LinearLayer",
+    "FlattenLayer",
+]
