@@ -2,22 +2,22 @@
 
 from __future__ import annotations
 
-import numpy as np
 import torch
-from numpy.typing import NDArray
 
-from ...bases import Module
 from ...utils import ArrayLike, transform_to_int_tuple
+from ..torch_module import TorchModule
 
 
-class AdaptiveAvgPool(Module):
+class AdaptiveAvgPool(TorchModule):
     """Adaptive average pooling module.
 
     Attributes
     ----------
-    output_size : ArrayLike[int]
+    output_size : Tuple[int, ...]
         output size from adaptive average pooling layer.
     """
+
+    output_size: tuple[int, ...]
 
     def __init__(self, input_shape: ArrayLike[int], output_size: ArrayLike[int]):
         """Adaptive AvgPooling module generalized for different dimensions.
@@ -38,18 +38,10 @@ class AdaptiveAvgPool(Module):
         output_size : ArrayLike[int]
             output spatial size for adaptive pool layer.
         """
-        super().__init__(input_shape)
-        self.output_size = transform_to_int_tuple(output_size, "output_size", self.ndims - 1)
-
-    @property
-    def output_shape(self) -> NDArray[np.int64]:
-        """Get output shape of Adaptive MaxPooling module."""
-        return np.array([self.input_shape[0], *self.output_size], dtype=np.int64)
-
-    @property
-    def stride(self) -> tuple[int, ...]:
-        """Get stride for Adaptive MaxPooling module."""
-        return tuple(float(s) for s in (self.input_shape[1:] / self.output_shape[1:]))
+        ndims = len(input_shape) - 1
+        output_size = transform_to_int_tuple(output_size, "output_size", ndims - 1)
+        super().__init__(input_shape=input_shape, output_shape=[input_shape[0], *output_size])
+        self.output_size = output_size
 
     def __repr__(self) -> str:
         """Get string representation of the module."""
@@ -57,7 +49,7 @@ class AdaptiveAvgPool(Module):
         values_dict = {"input_shape": self.input_shape, "output_shape": self.output_shape}
         return s.format(name=self.__class__.__name__, **values_dict)
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor, *others: torch.Tensor) -> torch.Tensor:
         """Forward pass method.
 
         Parameters
@@ -70,15 +62,16 @@ class AdaptiveAvgPool(Module):
         torch.Tensor
             result of pooling operation.
         """
-        if self.ndims == 2:
+        ndims = len(self.get_input_shape(0)) - 1
+        if ndims == 1:
             return torch.nn.functional.adaptive_avg_pool1d(
                 input=inputs, output_size=self.output_size
             )
-        elif self.ndims == 3:
+        elif ndims == 2:
             return torch.nn.functional.adaptive_avg_pool2d(
                 input=inputs, output_size=self.output_size
             )
-        elif self.ndims == 4:
+        elif ndims == 3:
             return torch.nn.functional.adaptive_avg_pool3d(
                 input=inputs, output_size=self.output_size
             )

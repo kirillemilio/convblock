@@ -2,19 +2,16 @@
 
 from __future__ import annotations
 
-from abc import abstractmethod
-
-import numpy as np
 import torch
-from numpy.typing import NDArray
 
 from .base_module import BaseModule
+from .torch_module import TorchModule
 
 
-class TorchModule(BaseModule, torch.nn.Module):
+class TorchSequential(BaseModule, torch.nn.Sequential):
     """Provides implementation of pytorch module wrapper."""
 
-    def __init__(self, input_shape: NDArray[np.int64], output_shape: NDArray[np.int64]) -> None:
+    def __init__(self, arg: TorchModule, *args: TorchModule) -> None:
         """Initialize simple module with specified input and output shapes.
 
         Parameters
@@ -29,11 +26,15 @@ class TorchModule(BaseModule, torch.nn.Module):
         ValueError
             If eighter input_shape or output_shape has more than 2 dimensions.
         """
+        input_shape = arg.input_shape.copy()
+        last_module = arg
+        for module in args:
+            last_module = module
+        output_shape = last_module.output_shape.copy()
+        torch.nn.Sequential.__init__(self, arg, *args)
         BaseModule.__init__(self, input_shape=input_shape, output_shape=output_shape)
-        torch.nn.Module.__init__(self)
 
-    @abstractmethod
-    def forward(self, *inputs: torch.Tensor) -> list[torch.Tensor]:
+    def forward(self, inputs: torch.Tensor, *others: torch.Tensor) -> list[torch.Tensor]:
         """Forward torch tensors through module.
 
         Parameters
@@ -46,22 +47,9 @@ class TorchModule(BaseModule, torch.nn.Module):
         list[torch.Tensor]
             list of output tensors.
         """
-        raise NotImplementedError()
-
-    def __call__(self, *inputs: torch.Tensor) -> list[torch.Tensor]:
-        """Forward torch tensors through module.
-
-        Parameters
-        ----------
-        *inputs : torch.Tensor
-            input tensors.
-
-        Returns
-        -------
-        list[torch.Tensor]
-            list of output tensors.
-        """
-        return self.forward(*inputs)
+        for module in self:
+            inputs = module(inputs)
+        return inputs
 
     def count_parameters(self, include_static: bool = False) -> int:
         """Count number of parameters.

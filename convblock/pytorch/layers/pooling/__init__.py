@@ -1,6 +1,7 @@
 """Contains imports of pooling layers."""
 
 from .adaptive_avg_pooling_layer import AdaptiveAvgPool
+from .adaptive_lp_pooling_layer import AdaptiveLPPool
 from .adaptive_max_pooling_layer import AdaptiveMaxPool
 from .avg_pooling_layer import AvgPool
 from .base_pooling_layer import BasePoolLayer
@@ -16,4 +17,5 @@ __all__ = [
     "LPPool",
     "AdaptiveAvgPool",
     "AdaptiveMaxPool",
+    "AdaptiveLPPool",
 ]

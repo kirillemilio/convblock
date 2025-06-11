@@ -6,8 +6,8 @@ import numpy as np
 import torch
 
 from ..utils import ArrayLike
-from .base_module import BaseModule
 from .conv_block import ConvBlock
+from .torch_module import TorchModule
 
 
 class FlattenFunction(torch.autograd.Function):
@@ -74,7 +74,7 @@ class FlattenFunction(torch.autograd.Function):
 
 
 @ConvBlock.register_option("<")
-class FlattenLayer(BaseModule):
+class FlattenLayer(TorchModule):
     """
     Flatten input tensor while preserving batch dimension.
 

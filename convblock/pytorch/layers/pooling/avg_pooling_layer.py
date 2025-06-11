@@ -26,21 +26,22 @@ class AvgPool(BasePoolLayer):
         Tensor
             result of pooling operation.
         """
-        if self.ndims == 2:
+        ndims = len(self.get_input_shape(0)) - 1
+        if ndims == 1:
             return torch.nn.functional.avg_pool1d(
                 input=inputs,
                 kernel_size=self.kernel_size,
                 stride=self.stride,
                 dilation=self.dilation,
             )
-        elif self.ndims == 3:
+        elif ndims == 2:
             return torch.nn.functional.avg_pool2d(
                 input=inputs,
                 kernel_size=self.kernel_size,
                 stride=self.stride,
                 dilation=self.dilation,
             )
-        elif self.ndims == 4:
+        elif ndims == 3:
             return torch.nn.functional.avg_pool3d(
                 input=inputs,
                 kernel_size=self.kernel_size,

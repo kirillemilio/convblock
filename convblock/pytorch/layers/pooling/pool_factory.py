@@ -7,6 +7,7 @@ from typing import Literal
 from ...utils import ArrayLike
 from ..conv_block import ConvBlock
 from .adaptive_avg_pooling_layer import AdaptiveAvgPool
+from .adaptive_lp_pooling_layer import AdaptiveLPPool
 from .adaptive_max_pooling_layer import AdaptiveMaxPool
 from .avg_pooling_layer import AvgPool
 from .base_pooling_layer import BasePoolLayer
@@ -125,7 +126,9 @@ class PoolingFactory:
             case "adaptive_avg":
                 return AdaptiveAvgPool(input_shape=input_shape, output_size=output_size)
             case "adaptive_lp":
-                raise NotImplementedError("Adaptive lp-pooling is not implemented yet")
+                return AdaptiveLPPool(
+                    input_shape=input_shape, output_size=output_size, norm_type=norm_type
+                )
             case _:
                 raise NotImplementedError(f"Unknown pooling mode: `{mode}`")
 
@@ -133,7 +136,10 @@ class PoolingFactory:
     @ConvBlock.register_option(name=">")
     @classmethod
     def create_global_pooling(
-        cls, input_shape: ArrayLike[int], mode: Literal["max", "avg", "lp"] = "avg"
+        cls,
+        input_shape: ArrayLike[int],
+        mode: Literal["max", "avg", "lp"] = "avg",
+        norm_type: float = 1.0,
     ) -> BasePoolLayer:
         """Create a global pooling layer that collapses spatial dimensions.
 
@@ -147,6 +153,9 @@ class PoolingFactory:
             Shape of the input tensor (C, H, W) or similar.
         mode : str, optional
             Pooling type: one of "max", "avg", or "lp". Default is "avg".
+        norm_type : float
+            normalization power for lp pooling layer.
+            Default is 1.0.
 
         Returns
         -------
@@ -158,33 +167,16 @@ class PoolingFactory:
         ValueError
             If mode is not one of the supported types.
         """
+        ndims = len(input_shape) - 1
+        output_size = [1] * ndims
         match mode:
             case "max":
-                return MaxPool(
-                    input_shape=input_shape,
-                    kernel_size=input_shape[1:],
-                    stride=input_shape[1:],
-                    dilation=1,
-                    pad_mode="valid",
-                    pad_value=0.0,
-                )
+                return AdaptiveMaxPool(input_shape=input_shape, output_size=output_size)
             case "avg":
-                return AvgPool(
-                    input_shape=input_shape,
-                    kernel_size=input_shape[1:],
-                    stride=input_shape[1:],
-                    dilation=1,
-                    pad_mode="valid",
-                    pad_value=0.0,
-                )
+                return AdaptiveAvgPool(input_shape=input_shape, output_size=output_size)
             case "lp":
-                return LPPool(
-                    input_shape=input_shape,
-                    kernel_size=input_shape[1:],
-                    stride=input_shape[1:],
-                    dilation=1,
-                    pad_mode="valid",
-                    pad_value=0.0,
+                return AdaptiveLPPool(
+                    input_shape=input_shape, output_size=output_size, norm_type=norm_type
                 )
             case _:
                 raise ValueError(f"Argument 'mode' must be 'max', 'avg' or 'lp'. Got '{mode}'.")

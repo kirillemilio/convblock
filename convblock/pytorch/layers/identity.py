@@ -6,10 +6,10 @@ import numpy as np
 import torch
 
 from ..utils import ArrayLike
-from .base_module import BaseModule
+from .torch_module import TorchModule
 
 
-class Identity(BaseModule):
+class Identity(TorchModule):
     """Identity layer implementation."""
 
     def __init__(self, input_shape: ArrayLike[int]) -> None:
@@ -18,7 +18,7 @@ class Identity(BaseModule):
             input_shape=input_shape[np.newaxis, ...], output_shape=input_shape[np.newaxis, ...]
         )
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor, *others: torch.Tensor) -> torch.Tensor:
         """Forward pass method for identity layer.
 
         Parameters

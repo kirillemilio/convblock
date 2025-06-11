@@ -6,13 +6,13 @@ from typing import Literal
 
 import torch
 
-from ...bases import Layer
 from ...utils import ArrayLike
 from ..conv_block import ConvBlock
+from ..torch_module import TorchModule
 
 
 @ConvBlock.register_option("n")
-class NormLayer(Layer):
+class NormLayer(TorchModule):
     """
     Generalized normalization layer with support for spectral norm and multiple modes.
 
@@ -48,70 +48,135 @@ class NormLayer(Layer):
         affine: bool = True,
         num_groups: int | None = None,
     ):
+        ndims = len(input_shape) - 1
         self.mode = mode.lower()
 
         if len(input_shape[1:]) > 3:
-            raise ValueError(f"Unsupported input dims: {self.ndims}. Expected 1D-3D.")
+            raise ValueError(f"Unsupported input dims: {ndims}. Expected 1D-3D.")
 
         if self.mode == "group" and num_groups is None:
             raise ValueError("GroupNorm requires num_groups argument.")
 
-        norm_layer = self._select_norm(
+        super().__init__(input_shape=input_shape, output_shape=input_shape)
+        self.layer = self._select_norm(
+            ndims=ndims,
+            input_shape=input_shape,
+            mode=mode,
             eps=eps,
             momentum=momentum,
             affine=affine,
             num_groups=num_groups,
         )
 
-        super().__init__(input_shape=input_shape, layer=norm_layer)
-
+    @classmethod
     def _select_norm(
-        self,
+        cls,
         ndims: int,
+        input_shape: ArrayLike[int],
+        mode: Literal["batch", "sync_batch", "layer", "group"],
         eps: float,
         momentum: float,
         affine: bool,
         num_groups: int | None,
     ) -> torch.nn.Module:
-        if self.mode == "batch":
+        """
+        Select appropriate PyTorch normalization layer based on mode.
+
+        Parameters
+        ----------
+        ndims : int
+            Number of spatial dimensions (1D, 2D, or 3D).
+        input_shape : ArrayLike[int]
+            Input shape in format (C, ...), excluding batch dimension.
+        mode : {"batch", "sync_batch", "instance", "layer", "group"}
+            Type of normalization to apply.
+        eps : float
+            Small constant added to avoid divide-by-zero.
+        momentum : float
+            Momentum value for running statistics.
+        affine : bool
+            Whether to include learnable affine parameters.
+        num_groups : int or None
+            Number of groups for GroupNorm. Required if mode is "group".
+
+        Returns
+        -------
+        torch.nn.Module
+            Instantiated PyTorch normalization module.
+
+        Raises
+        ------
+        ValueError
+            If the provided normalization mode is not supported.
+        """
+        num_channels = input_shape[0]
+        if mode == "batch":
             return {
                 1: torch.nn.BatchNorm1d,
                 2: torch.nn.BatchNorm2d,
                 3: torch.nn.BatchNorm3d,
             }[
-                self.ndims
-            ](self.in_channels, eps=eps, momentum=momentum, affine=affine)
+                ndims
+            ](num_channels, eps=eps, momentum=momentum, affine=affine)
 
-        elif self.mode == "sync_batch":
+        elif mode == "sync_batch":
             return {
                 1: torch.nn.SyncBatchNorm,
                 2: torch.nn.SyncBatchNorm,
                 3: torch.nn.SyncBatchNorm,
-            }[ndims](self.in_channels, eps=eps, momentum=momentum, affine=affine)
+            }[ndims](num_channels, eps=eps, momentum=momentum, affine=affine)
 
-        elif self.mode == "instance":
+        elif mode == "instance":
             return {
                 1: torch.nn.InstanceNorm1d,
                 2: torch.nn.InstanceNorm2d,
                 3: torch.nn.InstanceNorm3d,
-            }[ndims](self.in_channels, eps=eps, momentum=momentum, affine=affine)
+            }[ndims](num_channels, eps=eps, momentum=momentum, affine=affine)
 
-        elif self.mode == "layer":
-            return torch.nn.LayerNorm(self.input_shape, eps=eps, elementwise_affine=affine)
+        elif mode == "layer":
+            return torch.nn.LayerNorm(input_shape, eps=eps, elementwise_affine=affine)
 
-        elif self.mode == "group":
+        elif mode == "group":
             return torch.nn.GroupNorm(
-                num_groups=num_groups, num_channels=self.in_channels, eps=eps, affine=affine
+                num_groups=num_groups, num_channels=num_channels, eps=eps, affine=affine
             )
 
         else:
-            raise ValueError(f"Unsupported normalization mode: {self.mode!r}")
+            raise ValueError(f"Unsupported normalization mode: {mode!r}")
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Apply normalization to input tensor.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor of shape (N, C, *), where * represents
+            spatial dimensions matching the input shape.
+
+        Returns
+        -------
+        torch.Tensor
+            Normalized tensor with same shape as input.
+        """
         return self.layer(x)
 
     def __repr__(self) -> str:
+        """
+        Return a string representation of the normalization layer.
+
+        The representation includes mode, input channel count,
+        number of spatial dimensions, and whether spectral norm
+        is applied.
+
+        Returns
+        -------
+        str
+            String representation of the layer.
+        """
         spectral = (
             " + spectral" if isinstance(self.layer, torch.nn.utils.spectral_norm.__class__) else ""
         )
-        return f"NormLayer(mode={self.mode}, in_channels={self.in_channels}, ndim={self.ndims}){spectral}"
+        channels = self.get_input_shape(input_id=0)
+        ndims = self.get_ndims()
+        return f"NormLayer(mode={self.mode}, in_channels={channels}, ndim={ndims}){spectral}"

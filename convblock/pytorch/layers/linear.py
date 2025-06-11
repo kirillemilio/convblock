@@ -7,12 +7,12 @@ import torch
 
 from ..initializer import IInitializer, InitializerConfigDict, InitializerFactory
 from ..utils import ArrayLike
-from .base_module import BaseModule
 from .conv_block import ConvBlock
+from .torch_module import TorchModule
 
 
 @ConvBlock.register_option("f")
-class LinearLayer(BaseModule):
+class LinearLayer(TorchModule):
     """
     Implement a fully connected (linear) layer with custom initialization.
 
@@ -97,12 +97,12 @@ class LinearLayer(BaseModule):
             Weight parameter tensor of shape
             (out_channels, in_channels)
         """
-        weight = torch.Tensor(self.out_channels, self.in_channels)
+        weight = torch.Tensor(self.out_features, self.in_features)
         if initializer is not None:
             weight = initializer.initialize(weight)
         return torch.nn.Parameter(weight)
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor, *others: torch.Tensor) -> torch.Tensor:
         """
         Apply linear transformation to the input tensor.
 

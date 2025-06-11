@@ -2,13 +2,12 @@
 
 from typing import Literal
 
-import numpy as np
 import torch
 import torch.nn.functional as F  # noqa: N812
 
 from ..utils import ArrayLike
-from .base_module import BaseModule
 from .conv_block import ConvBlock
+from .torch_module import TorchModule
 
 
 class Swish(torch.nn.Module):
@@ -133,7 +132,7 @@ ACTIVATIONS = Literal[
 
 
 @ConvBlock.register_option(name="a")
-class Activation(BaseModule):
+class Activation(TorchModule):
     """Generalized activation layer."""
 
     def __init__(
@@ -180,9 +179,7 @@ class Activation(BaseModule):
         ValueError
             if argument 'activation' is not str or None value.
         """
-        input_shape = np.array(input_shape, dtype=np.int64)
-        output_shape = input_shape
-        super().__init__(input_shape=input_shape, output_shape=output_shape)
+        super().__init__(input_shape=input_shape, output_shape=input_shape)
         if not (isinstance(activation, str) or activation is None):
             raise ValueError("Argument 'activation' must have " + "type 'str' or be None.")
         activation = "linear" if activation is None else activation
@@ -238,7 +235,7 @@ class Activation(BaseModule):
                 )
         self.activation = activation
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor, *others: torch.Tensor) -> torch.Tensor:
         """Forward pass method.
 
         Parameters

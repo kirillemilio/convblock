@@ -10,6 +10,8 @@ from .flatten import FlattenLayer
 from .layers import BatchNorm, InstanceNorm, Upsample
 from .linear import LinearLayer
 from .pooling import PoolingFactory
+from .torch_module import TorchModule
+from .torch_sequential import TorchSequential
 
 __all__ = [
     "PoolingFactory",
@@ -19,4 +21,6 @@ __all__ = [
     "DropoutLayer",
     "LinearLayer",
     "FlattenLayer",
+    "TorchModule",
+    "TorchSequential",
 ]

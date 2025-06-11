@@ -1,4 +1,4 @@
-""" Contains ConvBlock, Branches, NoOperation and Merge classes. """
+"""Contains ConvBlock, Branches, NoOperation and Merge classes."""
 
 import copy
 import inspect
@@ -6,15 +6,23 @@ import operator
 import re
 from collections import Counter, OrderedDict, defaultdict
 from functools import reduce
+from typing import Callable, ClassVar, Type, TypeVar
 
 import numpy as np
 import torch
 
-from ..bases import *
-from ..utils import *
+from ..utils import FLOAT_TYPES, INT_TYPES, LIST_TYPES, ArrayLike
+from .torch_module import TorchModule
+from .torch_sequential import TorchSequential
+
+T = TypeVar("T", bound=TorchModule)
 
 
-class ConvBlock(Sequential, metaclass=MetaModule):
+class ConvBlock(TorchSequential):
+    """Convolutional block implementation."""
+
+    _options_to_params: ClassVar[dict[str, str]]
+    _options: ClassVar[dict[str, TorchModule]]
 
     @classmethod
     def get_options(cls) -> dict:
@@ -31,7 +39,6 @@ class ConvBlock(Sequential, metaclass=MetaModule):
     @classmethod
     def _unify_parameter(cls, values, vectorize, num_layers, ndims):
         """Unify parameter values passed to ConvBlock."""
-
         if isinstance(values, LIST_TYPES):
 
             # This is a kind of a hook: if there is only one layer of this type
@@ -72,7 +79,9 @@ class ConvBlock(Sequential, metaclass=MetaModule):
         return values
 
     @classmethod
-    def register_option(cls, name: str, vectorized_params: tuple[str, ...] = ()):
+    def register_option(
+        cls, name: str, vectorized_params: tuple[str, ...] = ()
+    ) -> Callable[[Type[T]], Type[T]]:
         """Register option for convolutional block.
 
         Parameters
@@ -90,7 +99,7 @@ class ConvBlock(Sequential, metaclass=MetaModule):
             decorator for module class.
         """
 
-        def decorator(module_cls):
+        def decorator(module_cls: Type[T]) -> Type[T]:
             cls._options[name] = module_cls
 
             params_description = []
@@ -125,7 +134,8 @@ class ConvBlock(Sequential, metaclass=MetaModule):
         return decorator
 
     @classmethod
-    def map_layout_to_options(cls, layout):
+    def map_layout_to_options(cls, layout: str) -> list[str]:
+        """Map layout to options."""
         return list(re.sub(r"\s+", "", layout))
 
     def __init__(self, input_shape, layout, **kwargs):

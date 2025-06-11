@@ -16,11 +16,9 @@ from ...utils import (
     pad,
     transform_to_int_tuple,
 )
-from ..conv_block import ConvBlock
 from .base_conv_layer import BaseConvLayer
 
 
-@ConvBlock.register_option(name="c", vectorized_params=("kernel_size", "stride", "dilation"))
 class Conv(BaseConvLayer):
     """
     Standard N-dimensional convolutional layer with configurable padding logic.
@@ -234,12 +232,12 @@ class Conv(BaseConvLayer):
         return s.format(name=self.__class__.__name__, **values_dict)
 
     def forward(self, inputs: torch.Tensor, *others: torch.Tensor) -> torch.Tensor:
-        """Forward pass method for tranposed convolution layer.
+        """Forward pass method for convolution layer.
 
         Parameters
         ----------
         inputs : Tensor
-            input tensor for transposed convolution layer.
+            input tensor for convolution layer.
 
         Returns
         -------
@@ -247,8 +245,9 @@ class Conv(BaseConvLayer):
             result of convolutional operation applied to the input tensor.
         """
         inputs = pad(inputs, self._pad_sizes, mode=self._pad_mode, value=self._pad_value)
+        ndims = len(self.get_input_shape(0)) - 1
 
-        if self.ndims == 2:
+        if ndims == 1:
             return torch.nn.functional.conv1d(
                 input=inputs,
                 weight=self.weight,
@@ -258,7 +257,7 @@ class Conv(BaseConvLayer):
                 dilation=self.dilation,
                 groups=self.groups,
             )
-        elif self.ndims == 3:
+        elif ndims == 2:
             return torch.nn.functional.conv2d(
                 input=inputs,
                 weight=self.weight,
@@ -268,7 +267,7 @@ class Conv(BaseConvLayer):
                 dilation=self.dilation,
                 groups=self.groups,
             )
-        elif self.ndims == 4:
+        elif ndims == 3:
             return torch.nn.functional.conv3d(
                 input=inputs,
                 weight=self.weight,

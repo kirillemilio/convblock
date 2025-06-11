@@ -103,21 +103,22 @@ class LPPool(BasePoolLayer):
         torch.Tensor
             result of pooling operation.
         """
-        if self.ndims == 2:
+        ndims = len(self.get_input_shape(0)) - 1
+        if ndims == 1:
             return torch.nn.functional.lp_pool1d(
                 input=inputs,
                 norm_type=self.norm_type,
                 kernel_size=self.kernel_size,
                 stride=self.stride,
             )
-        elif self.ndims == 3:
+        elif ndims == 2:
             return torch.nn.functional.lp_pool2d(
                 input=inputs,
                 norm_type=self.norm_type,
                 kernel_size=self.kernel_size,
                 stride=self.stride,
             )
-        elif self.ndims == 4:
+        elif ndims == 3:
             return torch.nn.functional.lp_pool3d(
                 input=inputs,
                 norm_type=self.norm_type,
