@@ -10,7 +10,7 @@ from ..conv import Conv
 from ..torch_module import TorchModule
 
 
-class MultiHeadAttentionModule(TorchModule):
+class VitMultiHeadAttentionModule(TorchModule):
     """
     Multi-head attention module for visual transformers.
 

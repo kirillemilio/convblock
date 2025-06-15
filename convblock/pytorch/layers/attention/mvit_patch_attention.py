@@ -11,7 +11,7 @@ from ..conv import Conv
 from ..torch_module import TorchModule
 
 
-class PatchMultiHeadAttentionModule(TorchModule):
+class MVitPatchMultiHeadAttentionModule(TorchModule):
     """
     Patch-based Multi-Head Self-Attention block.
 

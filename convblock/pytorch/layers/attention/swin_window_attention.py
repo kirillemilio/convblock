@@ -16,7 +16,7 @@ from ..torch_module import TorchModule
 from .mask import generate_shift_mask
 
 
-class WindowAttention(TorchModule):
+class SwinWindowAttentionModule(TorchModule):
     """
     Window-based Multi-Head Self-Attention module for image or video features.
 
@@ -133,7 +133,7 @@ class WindowAttention(TorchModule):
             init_bias=init_bias,
         )
         self.out_proj = Conv(
-            input_shape=[in_filters, *input_shape[1:]],
+            input_shape=[proj_dim, *input_shape[1:]],
             filters=out_filters if out_filters is not None else input_shape[0],
             kernel_size=1,
             stride=1,
